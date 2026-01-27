@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Experience Loading...</title>
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA4_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        // Replace with your actual GA4 Measurement ID
+        const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // ⚠️ CHANGE THIS
+        gtag('config', GA4_MEASUREMENT_ID);
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 28px;
+        }
+        
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info {
+            font-size: 14px;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+        
+        .redirect-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .redirect-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Launching AR Experience</h1>
+        <div class="loader"></div>
+        <p class="info">Preparing your augmented reality experience...</p>
+        <a href="#" id="redirectLink" class="redirect-btn">Tap to Continue</a>
+    </div>
+
+    <script>
+        // ⚠️ CONFIGURATION - UPDATE THESE VALUES
+        const CONFIG = {
+            ga4MeasurementId: 'G-XXXXXXXXXX', // Your GA4 Measurement ID
+            arExperienceUrl: 'https://your-ar-model-url.com', // Your AR experience URL
+            autoRedirectDelay: 2000, // milliseconds (2 seconds)
+            enableAutoRedirect: true // Set to false to require manual tap
+        };
+
+        // Update GA4 config with your measurement ID
+        gtag('config', CONFIG.ga4MeasurementId);
+
+        // Tracking data object
+        const trackingData = {
+            // Session Info
+            sessionId: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            timestamp: new Date().toISOString(),
+            
+            // Device Info
+            deviceType: /mobile/i.test(navigator.userAgent) ? 'mobile' : 
+                       /tablet/i.test(navigator.userAgent) ? 'tablet' : 'desktop',
+            osName: getOS(),
+            osVersion: navigator.userAgent,
+            browserName: getBrowser(),
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+            
+            // Network Info
+            connectionType: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+            
+            // Location Info (will be captured via GA4's automatic geolocation)
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            
+            // Referrer & Source
+            referrer: document.referrer || 'direct',
+            utmSource: getUrlParameter('utm_source'),
+            utmMedium: getUrlParameter('utm_medium'),
+            utmCampaign: getUrlParameter('utm_campaign'),
+            
+            // QR Context
+            qrLocation: getUrlParameter('qr_location') || 'unknown',
+            campaignId: getUrlParameter('campaign_id') || 'default',
+        };
+
+        // Helper Functions
+        function getOS() {
+            const ua = navigator.userAgent;
+            if (/android/i.test(ua)) return 'Android';
+            if (/iPad|iPhone|iPod/.test(ua)) return 'iOS';
+            if (/Win/.test(ua)) return 'Windows';
+            if (/Mac/.test(ua)) return 'MacOS';
+            if (/Linux/.test(ua)) return 'Linux';
+            return 'Unknown';
+        }
+
+        function getBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.indexOf('Firefox') > -1) return 'Firefox';
+            if (ua.indexOf('Chrome') > -1) return 'Chrome';
+            if (ua.indexOf('Safari') > -1) return 'Safari';
+            if (ua.indexOf('Edge') > -1) return 'Edge';
+            return 'Unknown';
+        }
+
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name) || '';
+        }
+
+        // Track page load time
+        window.addEventListener('load', () => {
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            trackingData.pageLoadTime = loadTime;
+            
+            // Send initial scan event to GA4
+            gtag('event', 'qr_scan', {
+                event_category: 'AR_QR_Tracking',
+                event_label: 'QR Code Scanned',
+                session_id: trackingData.sessionId,
+                device_type: trackingData.deviceType,
+                os_name: trackingData.osName,
+                browser_name: trackingData.browserName,
+                qr_location: trackingData.qrLocation,
+                campaign_id: trackingData.campaignId,
+                utm_source: trackingData.utmSource,
+                utm_medium: trackingData.utmMedium,
+                utm_campaign: trackingData.utmCampaign,
+                connection_type: trackingData.connectionType,
+                page_load_time: loadTime,
+                referrer: trackingData.referrer
+            });
+        });
+
+        // Track time on page (engagement)
+        let startTime = Date.now();
+        let engagementTracked = false;
+
+        function trackEngagement() {
+            if (!engagementTracked) {
+                const timeOnPage = Math.round((Date.now() - startTime) / 1000);
+                gtag('event', 'engagement_time', {
+                    event_category: 'AR_QR_Tracking',
+                    event_label: 'Time Before Redirect',
+                    value: timeOnPage,
+                    session_id: trackingData.sessionId
+                });
+                engagementTracked = true;
+            }
+        }
+
+        // Redirect function
+        function redirectToAR() {
+            trackEngagement();
+            
+            // Track redirect event
+            gtag('event', 'ar_redirect', {
+                event_category: 'AR_QR_Tracking',
+                event_label: 'Redirected to AR Experience',
+                session_id: trackingData.sessionId,
+                ar_url: CONFIG.arExperienceUrl
+            });
+            
+            // Small delay to ensure GA4 event is sent
+            setTimeout(() => {
+                window.location.href = CONFIG.arExperienceUrl;
+            }, 100);
+        }
+
+        // Setup redirect link
+        document.getElementById('redirectLink').href = CONFIG.arExperienceUrl;
+        document.getElementById('redirectLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            redirectToAR();
+        });
+
+        // Auto-redirect if enabled
+        if (CONFIG.enableAutoRedirect) {
+            setTimeout(redirectToAR, CONFIG.autoRedirectDelay);
+        }
+
+        // Track page visibility (user switching tabs)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                gtag('event', 'page_hidden', {
+                    event_category: 'AR_QR_Tracking',
+                    session_id: trackingData.sessionId
+                });
+            } else {
+                gtag('event', 'page_visible', {
+                    event_category: 'AR_QR_Tracking',
+                    session_id: trackingData.sessionId
+                });
+            }
+        });
+
+        // Track page exit
+        window.addEventListener('beforeunload', () => {
+            trackEngagement();
+            gtag('event', 'page_exit', {
+                event_category: 'AR_QR_Tracking',
+                session_id: trackingData.sessionId
+            });
+        });
+
+        // Track errors
+        window.addEventListener('error', (e) => {
+            gtag('event', 'javascript_error', {
+                event_category: 'AR_QR_Tracking',
+                event_label: e.message,
+                session_id: trackingData.sessionId
+            });
+        });
+
+        // Log tracking data to console (for debugging)
+        console.log('AR QR Tracking Data:', trackingData);
+    </script>
+</body>
+</html>
