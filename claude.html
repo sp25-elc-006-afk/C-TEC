@@ -6,14 +6,14 @@
     <title>AR Experience Loading...</title>
     
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA4_MEASUREMENT_ID"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J819FZ2FKD"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         
         // Replace with your actual GA4 Measurement ID
-        const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // ⚠️ CHANGE THIS
+        const GA4_MEASUREMENT_ID = 'G-J819FZ2FKD';
         gtag('config', GA4_MEASUREMENT_ID);
     </script>
     
@@ -22,7 +22,7 @@
             margin: 0;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #029390 0%, #01615f 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -66,22 +66,6 @@
             margin-top: 20px;
             opacity: 0.8;
         }
-        
-        .redirect-btn {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 15px 30px;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-        
-        .redirect-btn:hover {
-            transform: scale(1.05);
-        }
     </style>
 </head>
 <body>
@@ -89,14 +73,13 @@
         <h1>🎯 Launching AR Experience</h1>
         <div class="loader"></div>
         <p class="info">Preparing your augmented reality experience...</p>
-        <a href="#" id="redirectLink" class="redirect-btn">Tap to Continue</a>
     </div>
 
     <script>
         // ⚠️ CONFIGURATION - UPDATE THESE VALUES
         const CONFIG = {
-            ga4MeasurementId: 'G-XXXXXXXXXX', // Your GA4 Measurement ID
-            arExperienceUrl: 'https://your-ar-model-url.com', // Your AR experience URL
+            ga4MeasurementId: 'G-J819FZ2FKD',
+            arExperienceUrl: 'https://mywebar.com/p/Project_0_h1kmcylngc',
             autoRedirectDelay: 2000, // milliseconds (2 seconds)
             enableAutoRedirect: true // Set to false to require manual tap
         };
@@ -219,13 +202,6 @@
                 window.location.href = CONFIG.arExperienceUrl;
             }, 100);
         }
-
-        // Setup redirect link
-        document.getElementById('redirectLink').href = CONFIG.arExperienceUrl;
-        document.getElementById('redirectLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            redirectToAR();
-        });
 
         // Auto-redirect if enabled
         if (CONFIG.enableAutoRedirect) {
