@@ -187,17 +187,22 @@
             
             const currentCredit = parseInt(stored);
             
-            // If credit is 0 and unlocked, check if admin wants to recharge
-            if (currentCredit === 0 && isLocked !== 'true') {
-                // Only recharge if INITIAL_CREDIT value has been changed from last time
-                if (CONFIG.INITIAL_CREDIT > 0 && CONFIG.INITIAL_CREDIT != lastInitValue) {
-                    localStorage.setItem(STORAGE_KEYS.CREDIT, CONFIG.INITIAL_CREDIT);
-                    localStorage.setItem(STORAGE_KEYS.CREDIT_LOCKED, 'true');
-                    localStorage.setItem(STORAGE_KEYS.LAST_INIT_VALUE, CONFIG.INITIAL_CREDIT);
-                    return CONFIG.INITIAL_CREDIT;
-                }
+            // If locked, cannot change credit - return current value
+            if (isLocked === 'true') {
+                return currentCredit;
             }
             
+            // Credit is unlocked (reached 0)
+            // Check if admin has changed the INITIAL_CREDIT value
+            if (CONFIG.INITIAL_CREDIT > 0 && CONFIG.INITIAL_CREDIT != lastInitValue) {
+                // Recharge with new value
+                localStorage.setItem(STORAGE_KEYS.CREDIT, CONFIG.INITIAL_CREDIT);
+                localStorage.setItem(STORAGE_KEYS.CREDIT_LOCKED, 'true');
+                localStorage.setItem(STORAGE_KEYS.LAST_INIT_VALUE, CONFIG.INITIAL_CREDIT);
+                return CONFIG.INITIAL_CREDIT;
+            }
+            
+            // No change made, stay at current credit (0)
             return currentCredit;
         }
 
