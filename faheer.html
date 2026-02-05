@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAK-AR - AR Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #029390 0%, #01696b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .credit-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .loading-ring {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            margin: 20px 0;
+        }
+
+        .loading-ring:after {
+            content: " ";
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid #fff;
+            border-color: #fff transparent #fff transparent;
+            animation: loading-ring 1.2s linear infinite;
+        }
+
+        @keyframes loading-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .error-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #ffeb3b;
+        }
+
+        .error-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .contact-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .title {
+                font-size: 36px;
+            }
+            
+            .credit-badge {
+                top: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="credit-badge" id="creditBadge">Credit: --</div>
+    
+    <div class="container">
+        <div id="loadingScreen">
+            <h1 class="title">PAK-AR</h1>
+            <p class="subtitle">Launching AR experience</p>
+            <div class="loading-ring"></div>
+        </div>
+
+        <div id="errorScreen" class="hidden">
+            <div class="error-container">
+                <h2 class="error-title" id="errorTitle">⚠️ No Credits Available</h2>
+                <p class="error-message" id="errorMessage">
+                    You have exhausted your AR experience credits.
+                </p>
+                <div class="contact-info">
+                    Talk to your service provider<br><strong>PAK-AR</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // CONFIGURATION - EDIT THESE VALUES
+        // ========================================
+        const CONFIG = {
+            INITIAL_CREDIT: 4,                    // Set your initial credit value here
+            AR_REDIRECT_URL: 'https://mywebar.com/p/Project_0_h1kmcylngc',  // Replace with your MyWebAR link
+            IP_LIMIT_PER_DAY: 100,                    // Maximum scans per IP in 24 hours
+            LOADING_DURATION: 2000                  // Loading screen duration in milliseconds
+        };
+        // ========================================
+
+        const STORAGE_KEYS = {
+            CREDIT: 'pakar_credit',
+            CREDIT_LOCKED: 'pakar_credit_locked',
+            IP_TRACKING: 'pakar_ip_tracking'
+        };
+
+        // Initialize credit system
+        function initializeCredit() {
+            const stored = localStorage.getItem(STORAGE_KEYS.CREDIT);
+            const isLocked = localStorage.getItem(STORAGE_KEYS.CREDIT_LOCKED);
+
+            if (stored === null || isLocked !== 'true') {
+                // First time or not locked yet - set initial credit and lock it
+                localStorage.setItem(STORAGE_KEYS.CREDIT, CONFIG.INITIAL_CREDIT);
+                localStorage.setItem(STORAGE_KEYS.CREDIT_LOCKED, 'true');
+                return CONFIG.INITIAL_CREDIT;
+            }
+            
+            return parseInt(stored);
+        }
+
+        // Get current credit
+        function getCredit() {
+            const credit = parseInt(localStorage.getItem(STORAGE_KEYS.CREDIT)) || 0;
+            return Math.max(0, credit);
+        }
+
+        // Deduct credit
+        function deductCredit() {
+            let credit = getCredit();
+            if (credit > 0) {
+                credit--;
+                localStorage.setItem(STORAGE_KEYS.CREDIT, credit);
+                
+                // Unlock when credit reaches 0
+                if (credit === 0) {
+                    localStorage.removeItem(STORAGE_KEYS.CREDIT_LOCKED);
+                }
+            }
+            return credit;
+        }
+
+        // Update credit display
+        function updateCreditDisplay() {
+            const credit = getCredit();
+            document.getElementById('creditBadge').textContent = `Credit: ${credit}`;
+        }
+
+        // Get IP hash (simple client-side fingerprint)
+        async function getIPHash() {
+            // Create a simple browser fingerprint as IP substitute
+            const fingerprint = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width,
+                screen.height,
+                new Date().getTimezoneOffset()
+            ].join('|');
+            
+            // Simple hash function
+            let hash = 0;
+            for (let i = 0; i < fingerprint.length; i++) {
+                const char = fingerprint.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return 'fp_' + Math.abs(hash);
+        }
+
+        // Check IP limit
+        async function checkIPLimit() {
+            const ipHash = await getIPHash();
+            const tracking = JSON.parse(localStorage.getItem(STORAGE_KEYS.IP_TRACKING) || '{}');
+            const now = Date.now();
+            const oneDayAgo = now - (24 * 60 * 60 * 1000);
+
+            // Clean old entries
+            if (tracking[ipHash]) {
+                tracking[ipHash] = tracking[ipHash].filter(timestamp => timestamp > oneDayAgo);
+            } else {
+                tracking[ipHash] = [];
+            }
+
+            // Check limit
+            if (tracking[ipHash].length >= CONFIG.IP_LIMIT_PER_DAY) {
+                return false;
+            }
+
+            // Add new entry
+            tracking[ipHash].push(now);
+            localStorage.setItem(STORAGE_KEYS.IP_TRACKING, JSON.stringify(tracking));
+            return true;
+        }
+
+        // Show error screen
+        function showError(title, message) {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorScreen').classList.remove('hidden');
+        }
+
+        // Main function
+        async function launch() {
+            // Initialize and display credit
+            const credit = initializeCredit();
+            updateCreditDisplay();
+
+            // Wait for loading animation
+            await new Promise(resolve => setTimeout(resolve, CONFIG.LOADING_DURATION));
+
+            // Check IP limit first
+            const ipAllowed = await checkIPLimit();
+            if (!ipAllowed) {
+                showError(
+                    '⏱️ Daily Limit Reached',
+                    `You have reached the maximum of ${CONFIG.IP_LIMIT_PER_DAY} scans per day. Please try again tomorrow.`
+                );
+                return;
+            }
+
+            // Check credit
+            const currentCredit = getCredit();
+            if (currentCredit <= 0) {
+                showError(
+                    '⚠️ No Credits Available',
+                    'You have exhausted your AR experience credits.'
+                );
+                return;
+            }
+
+            // Deduct credit and redirect
+            deductCredit();
+            updateCreditDisplay();
+            window.location.href = CONFIG.AR_REDIRECT_URL;
+        }
+
+        // Start the application
+        launch();
+    </script>
+</body>
+</html>
